@@ -119,6 +119,7 @@ public class GlideImageJob extends BaseJob {
         } catch (Exception e) {
             if (mNetworkFetch) {
                 Logger.e(e);
+                Logger.e(e.getCause().getMessage());
                 EventBus.getDefault().post(new GlideImageEvent(mUrl, -1, Constants.STATUS_FAIL));
             }
         }

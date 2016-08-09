@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
+import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -54,13 +55,19 @@ public class OkHttpStreamFetcher implements DataFetcher<InputStream> {
     private InputStream getImage() throws IOException {
         Request request = getRequest();
 
-        Response response = client.newCall(request).execute();
+        Call call = client.newCall(request);
+        Response response = call.execute();
         responseBody = response.body();
         if (!response.isSuccessful()) {
             throw new IOException("Request failed with code: " + response.code());
         }
 
         long contentLength = responseBody.contentLength();
+        if (contentLength > 200 * 1024) {
+            call.cancel();
+            throw new IOException("Request failed with code: " + 999 + ", contentLength=" + contentLength);
+        }
+
         stream = ContentLengthInputStream.obtain(responseBody.byteStream(), contentLength);
         return stream;
     }
